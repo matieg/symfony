@@ -28,21 +28,26 @@ class ExampleController extends AbstractController
         // return $this->json($users, context: [ 'groups' => ['user'] ]);
     }
 
-    #[Route( path:'/create', name: 'app_create', methods: ['POST'] )]
+    #[Route( path:'/create', name: 'app_create', methods: ['POST', 'GET'] )]
     public function create(Request $request, UserRepository $userRepository)
     {
 
         try{
-            // json_decode($request->getContent(), true);
+            // $data = json_decode($request->getContent(), true);
+            // dump($data);
             $user = new User();
             $form = $this->createForm( UserFormType::class, $user );
-            $form->handleRequest($request);
-            if( $form->isSubmitted() && $form->isValid() ){
+            // $form->handleRequest($request);
+            $form->submit($request->getContent());
+            print_r($form->getData());
+            if( $form->isSubmitted() ){
                 $userRepository->save($user, true);
-                return $this->json( ['message'=>'mensaje enviado'], Response::HTTP_OK );
+                return $this->json( $user, Response::HTTP_OK );
             }
+            dump("---------------------");
+            return $this->json($form, 200);
         } catch (Exception $e ){
-
+            dump($e);
             return $this->json( ['message'=> $e->getMessage()], Response::HTTP_OK );
         }
     }
