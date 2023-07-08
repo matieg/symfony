@@ -3,11 +3,14 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User
+class User implements PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -16,7 +19,7 @@ class User
     private ?int $id = null;
     
     #[ORM\Column(length: 255)]
-    #[Groups(['user'])]
+    #[Groups(['user_u'])]
     private ?string $name = null;
     
     #[ORM\Column(length: 255)]
@@ -24,8 +27,17 @@ class User
     private ?string $username = null;
     
     #[ORM\Column(length: 255)]
-    #[Groups(['user_u'])]
+    #[Groups(['user'])]
     private ?string $password = null;
+    
+    #[ORM\ManyToMany(targetEntity: Profile::class, inversedBy: 'users')]
+    #[Groups(['user_u'])]
+    private Collection $profiles;
+
+    public function __construct()
+    {
+        $this->profiles = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -64,6 +76,30 @@ class User
     public function setPassword(string $password): static
     {
         $this->password = $password;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Profile>
+     */
+    public function getProfiles(): Collection
+    {
+        return $this->profiles;
+    }
+
+    public function addProfile(Profile $profile): static
+    {
+        if (!$this->profiles->contains($profile)) {
+            $this->profiles->add($profile);
+        }
+
+        return $this;
+    }
+
+    public function removeProfile(Profile $profile): static
+    {
+        $this->profiles->removeElement($profile);
 
         return $this;
     }
