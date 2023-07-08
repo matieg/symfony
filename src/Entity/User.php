@@ -15,23 +15,23 @@ class User implements PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user_u'])]
+    #[Groups(['user'])]
     private ?int $id = null;
     
     #[ORM\Column(length: 255)]
-    #[Groups(['user_u'])]
+    #[Groups(['user'])]
     private ?string $name = null;
     
     #[ORM\Column(length: 255)]
-    #[Groups(['user_u'])]
+    #[Groups(['credential'])]
     private ?string $username = null;
     
     #[ORM\Column(length: 255)]
-    #[Groups(['user'])]
+    #[Groups(['credential'])]
     private ?string $password = null;
     
     #[ORM\ManyToMany(targetEntity: Profile::class, inversedBy: 'users')]
-    #[Groups(['user_u'])]
+    #[Groups(['user'])]
     private Collection $profiles;
 
     public function __construct()

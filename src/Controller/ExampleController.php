@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Profile;
 use App\Entity\User;
+use App\Repository\ProfileRepository;
 use App\Repository\UserRepository;
 use Exception;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -12,7 +13,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+// use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 // use Symfony\Component\Serializer\SerializerInterface;
 
 class ExampleController extends AbstractController
@@ -24,33 +26,36 @@ class ExampleController extends AbstractController
         $users = $userRepository->findAll();
 
         // return $this->json($users, 200);
-        return $this->json($users, context: [ 'groups' => ['user_u'] ]);
+        return $this->json($users, context: [ 'groups' => ['user'] ]);
     }
 
     #[Route('/view/{id}')]
     public function show( #[MapEntity()] User $user ): JsonResponse
     {
 
-        return $this->json($user, context: [ 'groups' => ['user_u'] ]);
+        return $this->json($user, context: [ 'groups' => ['user'] ]);
     }
 
     #[Route( path:'/create', name: 'app_create', methods: ['POST', 'GET'] )]
     public function create( #[MapRequestPayload()] User $user, UserRepository $userRepository, 
-    // PasswordAuthenticatedUserInterface $passwordHasher
+    UserPasswordHasherInterface $passwordHasher,
+    ProfileRepository $profileRepository
     ): JsonResponse
     {
         try {
-            // $plaintextPassword = $user->getPassword();
-            // $hashedPassword = $passwordHasher->hashPassword(
-            //     $user,
-            //     $plaintextPassword
-            // );
-            // dump($hashedPassword);
+
+            $hashedPassword = $passwordHasher->hashPassword( $user, $user->getPassword() );
+            $user->setPassword($hashedPassword);
+
+            $profile = $profileRepository->find(1);
+            $user->addProfile($profile);
+            
             $userRepository->save($user, true);
-            return $this->json( $user, Response::HTTP_OK );
+            
+            return $this->json( $user, Response::HTTP_OK, context: ['groups' => ['user']] );
             
         } catch (Exception $e ) {
-            return $this->json( ['message'=> $e->getMessage()], Response::HTTP_BAD_REQUEST );
+            return $this->json( ['message'=> $e->getMessage()], Response::HTTP_BAD_REQUEST, [] );
         }
     }
 
