@@ -12,7 +12,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+// use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTManager;
 
 class AuthController extends AbstractController
 {
@@ -40,13 +41,21 @@ class AuthController extends AbstractController
     }
     
     #[Route( path: '/login', name: 'login', methods: ['POST'])]
-    public function login(Request $request, AuthenticationUtils $authenticationUtils ): JsonResponse
+    public function login(Request $request, UserRepository $userRepository, UserPasswordHasherInterface $passwordHasher, JWTTokenManagerInterface $jwtManager): JsonResponse
     {
         try {
 
-            $error = $authenticationUtils->getLastAuthenticationError();
-            dump($request->getContent());
-            dump($error);
+            $dataRequest = $request->toArray();
+            $user = $userRepository->findOneBy([ 'username' => $dataRequest['username']]);
+
+            if(!$user)
+                throw new Exception('Usuario invalido');
+                
+            if( !$passwordHasher->isPasswordValid($user, $dataRequest['password']) ) 
+                throw new Exception('Usuario invalido (password)');
+
+            $token = $jwtManager->create(['username' => $dataRequest['username'] ]);
+            dump($token);
             
             return $this->json( [], Response::HTTP_OK );
             
