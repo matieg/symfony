@@ -5,6 +5,7 @@ use App\Entity\User;
 use App\Repository\ProfileRepository;
 use App\Repository\UserRepository;
 use Exception;
+use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -41,7 +42,7 @@ class AuthController extends AbstractController
     }
     
     #[Route( path: '/login', name: 'login', methods: ['POST'])]
-    public function login(Request $request, UserRepository $userRepository, UserPasswordHasherInterface $passwordHasher, JWTTokenManagerInterface $jwtManager): JsonResponse
+    public function login(Request $request, UserRepository $userRepository, UserPasswordHasherInterface $passwordHasher, JWTEncoderInterface $jwtManager): JsonResponse
     {
         try {
 
@@ -54,7 +55,9 @@ class AuthController extends AbstractController
             if( !$passwordHasher->isPasswordValid($user, $dataRequest['password']) ) 
                 throw new Exception('Usuario invalido (password)');
 
-            $token = $jwtManager->create(['username' => $dataRequest['username'] ]);
+                
+            dump($_ENV['JWT_SECRET_KEY']);
+            $token = $jwtManager->encode(['username' => $dataRequest['username'] ]);
             dump($token);
             
             return $this->json( [], Response::HTTP_OK );

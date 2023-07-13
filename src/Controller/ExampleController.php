@@ -15,12 +15,15 @@ use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Annotation\Route;
 // use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
 // use Symfony\Component\Serializer\SerializerInterface;
 
 class ExampleController extends AbstractController
 {
     
     #[Route( path: '/index', name: 'app_index', methods: ['GET'])]
+    #[IsGranted('perron', message: 'No access! Get out!')]
     public function index(UserRepository $userRepository): JsonResponse
     {
         $users = $userRepository->findAll();
