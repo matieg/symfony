@@ -23,7 +23,7 @@ class ExampleController extends AbstractController
 {
     
     #[Route( path: '/index', name: 'app_index', methods: ['GET'])]
-    #[IsGranted('perron', message: 'No access! Get out!')]
+    // #[IsGranted('token', message: 'No access! Get out!')]
     public function index(UserRepository $userRepository): JsonResponse
     {
         $users = $userRepository->findAll();

@@ -66,4 +66,28 @@ class AuthController extends AbstractController
             return $this->json( ['message'=> $e->getMessage()], Response::HTTP_BAD_REQUEST, [] );
         }
     }
+
+    #[Route( path: '/api/token/validate', name: 'token_validate', methods: ['POST'])]
+    public function validateToken(Request $request): JsonResponse
+    {
+        // Obtener el token enviado en la solicitud
+        $token = $request->headers->get('Authorization');
+
+        // Realizar la lógica de validación del token
+        if ($this->isValidToken($token)) {
+            return new JsonResponse(['message' => 'Token válido']);
+        }
+
+        // Devolver una respuesta de error si el token no es válido
+        return new JsonResponse(['message' => 'Token inválido'], 401);
+    }
+
+    private function isValidToken(string $token): bool
+    {
+        // Implementar la lógica de validación del token según tus requerimientos
+        // Puede ser una verificación en una base de datos, una lista blanca, etc.
+        // En este ejemplo, simplemente verificamos si el token es igual a 'mi_token_secreto'
+        return $token === 'mi_token_secreto';
+    }
+
 }
